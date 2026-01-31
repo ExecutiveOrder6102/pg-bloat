@@ -1,0 +1,33 @@
+services:
+  postgres:
+    image: postgres:18
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: bloatdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql
+
+  bloat-gen:
+    image: postgres:18
+    depends_on:
+      - postgres
+    environment:
+      PGPASSWORD: postgres
+      BLOAT_MULTIPLIER: ${BLOAT_MULTIPLIER:-1}
+    volumes:
+      - ./docker:/docker
+    command:
+      - bash
+      - -c
+      - |
+        set -euo pipefail
+        until pg_isready -h postgres -U postgres; do sleep 1; done
+        psql -h postgres -U postgres -d bloatdb -f /docker/init.sql
+        pgbench -i -s 20 -h postgres -U postgres -d bloatdb
+        psql -h postgres -U postgres -d bloatdb -c "SET bloat.multiplier = '${BLOAT_MULTIPLIER:-1}'" -f /docker/bloat.sql
+
+volumes:
+  postgres-data:
