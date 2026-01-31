@@ -4,6 +4,7 @@ go 1.24.0
 
 require (
 	cloud.google.com/go/cloudsqlconn v1.20.0
+	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/jackc/pgx/v5 v5.8.0
 	golang.org/x/term v0.39.0
 )
